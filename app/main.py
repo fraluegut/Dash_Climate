@@ -1,136 +1,74 @@
-import plotly.express as px
 import dash
 from dash import html, dcc
 import pandas as pd
+from datetime import datetime as dt
+import plotly.graph_objs as go
+from dash.dependencies import Input, Output
 
-# Cargar los datos del archivo csv
-# df = pd.read_csv('datos_clima.csv')
-df = pd.read_csv('data.csv')
-# Definir el estilo
-external_stylesheets = ['style.css']
-#
-# # Crear la aplicación Dash
-# app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
-#
-# # Definir el layout de la aplicación
-# app.layout = html.Div(children=[
-#     html.H1(children='Dashboard'),
-#
-#     # Definir las pestañas
-#     dcc.Tabs(id="tabs", children=[
-#         # Primera pestaña
-#         dcc.Tab(label='Pestaña 1', children=[
-#             html.Div(children=[
-#                 html.Label('Selecciona el periodo:'),
-#                 dcc.DatePickerRange(
-#                     id='date-range',
-#                     min_date_allowed=df['fecha'].min(),
-#                     max_date_allowed=df['fecha'].max(),
-#                     start_date=df['fecha'].min(),
-#                     end_date=df['fecha'].max()
-#                 ),
-#                 html.Label('Selecciona las variables:'),
-#                 dcc.Checklist(
-#                     id='variables',
-#                     options=[
-#                         {'label': 'Temperatura', 'value': 'temperatura'},
-#                         {'label': 'Humedad', 'value': 'humedad'},
-#                         {'label': 'Agua acumulada', 'value': 'agua acumulada'},
-#                         {'label': 'Luz', 'value': 'luz'},
-#                         {'label': 'Presión', 'value': 'presión'}
-#                     ],
-#                     value=['temperatura', 'humedad']
-#                 ),
-#                 html.Label('Selecciona la media:'),
-#                 dcc.RadioItems(
-#                     id='media',
-#                     options=[
-#                         {'label': 'Media', 'value': 'mean'},
-#                         {'label': 'Máximo', 'value': 'max'},
-#                         {'label': 'Mínimo', 'value': 'min'}
-#                     ],
-#                     value='mean'
-#                 ),
-#                 dcc.Graph(id='graph')
-#             ])
-#         ]),
-#
-#         # Segunda pestaña
-#         dcc.Tab(label='Pestaña 2', children=[
-#             html.Div(children=[
-#                 html.Label('Selecciona las variables:'),
-#                 dcc.Checklist(
-#                     id='variables2',
-#                     options=[
-#                         {'label': 'Temperatura', 'value': 'temperatura'},
-#                         {'label': 'Humedad', 'value': 'humedad'},
-#                         {'label': 'Agua acumulada', 'value': 'agua acumulada'},
-#                         {'label': 'Luz', 'value': 'luz'},
-#                         {'label': 'Presión', 'value': 'presión'}
-#                     ],
-#                     value=['temperatura', 'humedad']
-#                 ),
-#                 html.Label('Selecciona los años a comparar:'),
-#                 dcc.Dropdown(
-#                     id='years',
-#                     options=[{'label': '2021', 'value': 2021},
-#                              {'label': '2022', 'value': 2022}],
-#                     multi=True,
-#                     value=[2021, 2022]
-#                 ),
-#                 dcc.Graph(id='graph2')
-#             ])
-#         ])
-#     ])
-# ])
-#
-#
-# # Definir las funciones para actualizar las gráficas
-# @app.callback(
-#     dash.dependencies.Output('graph', 'figure'),
-#     [dash.dependencies.Input('date-range', 'start_date'),
-#      dash.dependencies.Input('date-range', 'end_date'),
-#      dash.dependencies.Input('variables', 'value'),
-#      dash.dependencies.Input('media', 'value')])
-# def update_graph(start_date, end_date, variables, media):
-#     filtered_df = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
-#     traces = []
-#     for variable in variables:
-#         traces.append(
-#             {'x': filtered_df['fecha'], 'y': filtered_df[variable].rolling('7d', center=True).apply(media).values,
-#              'name': variable})
-#     return {'data': traces, 'layout': {'title': 'Gráfica dinámica'}}
-#
-#
-# @app.callback(
-#     dash.dependencies.Output('graph2', 'figure'),
-#     [dash.dependencies.Input('variables2', 'value'),
-#      dash.dependencies.Input('years', 'value')])
-# def update_graph2(variables, years):
-#     traces = []
-#     for year in years:
-#         filtered_df = df[df['fecha'].dt.year == year]
-#         for variable in variables:
-#             traces.append({'x': filtered_df['fecha'], 'y': filtered_df[variable], 'name': f'{variable} - {year}'})
-#     return {'data': traces, 'layout': {'title': 'Comparación de años'}}
-#
-#
-# # Ejecutar la aplicación
-# if __name__ == '__main__':
-#     app.run_server(debug=True)
+# Cargar los datos
+df = pd.read_csv('datos.csv')
+df['fecha'] = pd.to_datetime(df['fecha'])
+
+# Cargar el archivo de estilos CSS
+external_stylesheets = ['https://codepen.io/chriddyp/pen/bWLwgP.css', 'D:/PYTHON/Dash_Climate/app/style.css']
+# Crear la aplicación
+app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
+
+# Definir las opciones del menú desplegable
+variable_options = [{'label': 'Temperatura', 'value': 'temperatura'},
+                    {'label': 'Humedad', 'value': 'humedad'},
+                    {'label': 'Presión', 'value': 'presion'},
+                    {'label': 'Lluvia', 'value': 'lluvia'}]
 
 
-# Crear la gráfica utilizando Plotly
-fig = px.line(df, x='Fecha', y='Temperatura')
-
-# Definir la aplicación Dash y su diseño
-app = dash.Dash(__name__)
+# Definir la página principal
 app.layout = html.Div([
-    dcc.Graph(
-        id='temperatura-graph',
-        figure=fig
-    )
+    # Título de la página
+    html.H1('Dashboard'),
+
+    # Menú desplegable para seleccionar la variable
+    dcc.Dropdown(id='variable-selector', options=variable_options, value='temperatura'),
+
+    # Seleccionador de fecha inicial y final
+    dcc.DatePickerRange(
+        id='date-range-picker',
+        min_date_allowed=df['fecha'].min(),
+        max_date_allowed=df['fecha'].max(),
+        start_date=df['fecha'].min(),
+        end_date=df['fecha'].max()
+    ),
+
+    # Gráfica de la variable seleccionada
+    dcc.Graph(id='variable-graph'),
+
 ])
 
+
+# Definir las funciones para actualizar las gráficas
+@app.callback(Output('variable-graph', 'figure'),
+              [Input('variable-selector', 'value'),
+               Input('date-range-picker', 'start_date'),
+               Input('date-range-picker', 'end_date')])
+def update_variable_graph(variable, start_date, end_date):
+    # Convertir las fechas en objetos datetime
+    start_date = dt.strptime(start_date[:10], '%Y-%m-%d')
+    end_date = dt.strptime(end_date[:10], '%Y-%m-%d')
+
+    # Filtrar los datos por rango de fechas
+    filtered_df = df[(df['fecha'] >= start_date) & (df['fecha'] <= end_date)]
+
+    # Obtener los datos de la variable seleccionada
+    y = filtered_df[variable]
+
+    # Crear la figura de la gráfica
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(x=filtered_df['fecha'], y=y, mode='lines'))
+    fig.update_layout(title=f'{variable.capitalize()} vs. fecha', xaxis_title='fecha',
+                      yaxis_title=variable.capitalize())
+
+    return fig
+
+
+# Iniciar la aplicación
 if __name__ == '__main__':
     app.run_server(debug=True)

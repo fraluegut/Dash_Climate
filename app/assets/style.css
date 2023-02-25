@@ -1,0 +1,41 @@
+/* Definir variables para los colores */
+:root {
+  --background-color: #1c1c1c;
+  --text-color: #f2f2f2;
+  --plot-background-color: #363636;
+  --plot-text-color: #f2f2f2;
+}
+
+/* Estilo para el body */
+body {
+  background-color: var(--background-color);
+  color: var(--text-color);
+}
+
+/* Estilo para los títulos */
+h1, h2, h3, h4, h5 {
+  color: var(--text-color);
+}
+
+/* Estilo para el menú desplegable */
+.Select-control {
+  background-color: var(--plot-background-color);
+  color: var(--plot-text-color);
+  border-color: var(--plot-background-color);
+}
+
+/* Estilo para los gráficos */
+.plotly-graph-div {
+  background-color: var(--plot-background-color);
+  color: var(--plot-text-color);
+}
+
+/* Estilo para las etiquetas de los ejes */
+.g-xaxis, .g-yaxis {
+  color: var(--plot-text-color);
+}
+
+/* Estilo para las líneas de la gráfica */
+.g-line {
+  stroke: var(--plot-text-color);
+}
